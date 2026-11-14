@@ -1,0 +1,887 @@
+/* Slate Bootstrap — a Bootstrap 5.3 page: black bar, blue gradient band,
+   white cards, dark footer, no sidebar. */
+:root {
+    --surface: #f8f9fa;
+    --canvas: #ffffff;
+    --on-surface: #212529;
+    --muted: #5c636a;
+    --primary: #0a58ca;
+    --primary-hover: #084298;
+    --secondary: #084298;
+    --accent: #0a58ca;
+    --border: #dee2e6;
+    /* Bootstrap's gray-600 outline: the palette value that clears 3:1 on this canvas,
+       so it is the only colour allowed to draw a control edge. */
+    --outline: #6c757d;
+    --border-soft: #e9ecef;
+    --accent-soft: #e7f1ff;
+    --danger: #b02a37;
+    --danger-soft: #f8d7da;
+    --radius: 0.375rem;
+    --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-head: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
+    /* Bootstrap's dark navbar and inverse footer. */
+    --header-bg: #212529;
+    --header-line: #343a40;
+    --footer-bg: #212529;
+    --footer-ink: #dee2e6;
+    --footer-accent: #6ea8fe;
+    /* The jumbotron gradient, darkest last. White text clears AA on all three
+       stops (6.44 / 9.36 / 13.51). Bootstrap's #3d8bfd and #6ea8fe are excluded:
+       white on them is 3.33 and 2.42. */
+    --jumbo-start: #0a58ca;
+    --jumbo-mid: #084298;
+    --jumbo-end: #052c65;
+    /* Bootstrap's xl container width and gutter. */
+    --content-max: 1140px;
+    --content-pad: 0.75rem;
+    --radius-lg: 0.75rem;
+    --shadow-1: 0 1px 2px rgb(33 37 41 / 0.05), 0 8px 24px rgb(33 37 41 / 0.06);
+    --shadow-2: 0 12px 30px rgb(33 37 41 / 0.12);
+    --dur: 180ms;
+    --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+* { box-sizing: border-box; }
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    min-height: 100svh;
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--on-surface);
+    background: var(--surface);
+}
+
+h1, h2, h3 { font-family: var(--font-head); font-weight: 500; line-height: 1.2; }
+h1 { font-size: 2.5rem; }
+h2 { font-size: 2rem; }
+h3 { font-size: 1.75rem; }
+
+a { color: var(--secondary); text-decoration: underline; }
+a:hover, a:focus { color: var(--primary); }
+
+:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 3px;
+}
+
+.skip-link {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    background: var(--on-surface);
+    color: #ffffff;
+    padding: 0.5rem 1rem;
+}
+.skip-link:focus { left: 0; }
+
+.site-header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--header-bg);
+    border-bottom: 1px solid var(--header-line);
+    box-shadow: 0 1px 0 rgb(110 168 254 / 0.18), 0 8px 24px rgb(0 0 0 / 0.12);
+}
+
+/* The bar spans the viewport; the row inside it shares the article's content
+   column, so the menu ends where the text ends. */
+.header-inner {
+    max-width: var(--content-max);
+    margin: 0 auto;
+    padding: 0.3rem var(--content-pad);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+/* No brand in this theme, so the row holds one child and the menu carries the
+   right edge on its own. */
+.site-header--nav-only .header-inner {
+    justify-content: flex-end;
+}
+
+.site-title {
+    font-family: var(--font-head);
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: 0;
+    color: #ffffff;
+    text-decoration: none;
+}
+
+/* The menu is the right-hand item of the bar: the brand keeps the left edge and
+   the nav is pushed to the far right, aligned with the bar's top edge. */
+.site-nav {
+    margin-left: auto;
+    min-width: 0;
+}
+
+.site-nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.15rem 1.15rem;
+}
+
+.site-nav li { position: relative; }
+
+.site-nav a {
+    display: inline-block;
+    padding: 0.25rem 0;
+    font-size: 0.875rem;
+    font-weight: 400;
+    letter-spacing: 0;
+    color: rgba(255, 255, 255, 0.85);
+    text-decoration: none;
+    border-bottom: 0;
+    transition: color 120ms ease;
+}
+
+.site-nav a:hover,
+.site-nav a:focus-visible {
+    color: #ffffff;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+
+.site-nav ul ul {
+    flex-basis: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.15rem;
+    padding: 0.35rem 0 0.2rem 0.85rem;
+    border-left: 2px solid var(--header-line);
+    background: #212529;
+}
+
+/* On a pointer-capable screen a sub-menu is a panel under its parent, not extra
+   rows in the bar: an open panel must not stretch the header. Hover opens it for
+   a mouse, focus-within for a keyboard, so it stays reachable without a script. */
+@media (min-width: 992px) {
+    .site-nav ul ul {
+        position: absolute;
+        top: calc(100% + 0.5rem);
+        right: 0;
+        min-width: 13rem;
+        margin: 0;
+        padding: 0.6rem 0.85rem;
+        gap: 0.35rem;
+        background: #212529;
+        border: 1px solid var(--header-line);
+        border-left: 1px solid var(--header-line);
+        border-radius: 0.5rem;
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-4px);
+        transition: opacity 140ms ease, transform 140ms ease, visibility 140ms;
+        z-index: 30;
+    }
+
+    .site-nav li:hover > ul,
+    .site-nav li:focus-within > ul {
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+    }
+}
+
+.site-nav ul ul a {
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: #ced4da;
+}
+
+.site-nav ul ul a:hover,
+.site-nav ul ul a:focus-visible {
+    color: #ffffff;
+}
+
+@media (max-width: 991px) {
+    .header-inner { padding: 0.3rem var(--content-pad); gap: 0.5rem 1rem; }
+    .site-nav { margin-left: 0; width: 100%; }
+    .site-nav ul { justify-content: flex-end; gap: 0.2rem 1rem; }
+    .site-nav ul ul { align-items: flex-end; border-left: 0; border-right: 2px solid var(--header-line); padding: 0.3rem 0.75rem 0.2rem 0; }
+}
+
+.announcement {
+    background: var(--accent-soft);
+    border: 1px solid var(--border-soft);
+    border-left: 3px solid var(--primary);
+    padding: 0.75rem 1.5rem;
+}
+
+/* Bootstrap 5.3 dropped the jumbotron component; its replacement pattern is a
+   padded slab. This one is full-bleed: it is emitted by layout.php above
+   .layout, so it has no width of its own and the column lives on the inner
+   wrapper. Painted here, not by Bootstrap, so a CDN outage cannot remove it.
+   White text because every stop clears AA for white (6.44 / 9.36 / 13.51). */
+.jumbotron {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    background-color: var(--jumbo-end);
+    background-image: linear-gradient(135deg, var(--jumbo-start) 0%, var(--jumbo-mid) 45%, var(--jumbo-end) 100%);
+    color: #ffffff;
+    padding: 4rem 0;
+    margin: 0;
+}
+
+.jumbotron::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background: radial-gradient(circle at 85% 20%, rgb(255 255 255 / 0.14), transparent 34%);
+}
+
+.jumbotron::after {
+    content: "";
+    position: absolute;
+    top: -8rem;
+    right: -6rem;
+    z-index: 0;
+    width: 20rem;
+    height: 20rem;
+    border: 1px solid rgb(255 255 255 / 0.18);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.jumbotron__inner {
+    position: relative;
+    z-index: 1;
+    max-width: var(--content-max);
+    margin: 0 auto;
+    padding: 0 var(--content-pad);
+}
+
+.jumbotron__title {
+    max-width: 20ch;
+    margin: 0 0 1rem;
+    font-family: var(--font-head);
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 300;
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+    text-shadow: 0 1px 2px rgb(5 44 101 / 0.2);
+    color: inherit;
+}
+
+.jumbotron__title::after {
+    content: "";
+    display: block;
+    width: 3rem;
+    height: 3px;
+    margin-top: 1.15rem;
+    background: rgb(255 255 255 / 0.72);
+}
+
+.jumbotron__tagline {
+    max-width: 44rem;
+    margin: 0 0 1rem;
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.5;
+    letter-spacing: 0;
+    color: #ffffff;
+}
+
+.jumbotron__lead {
+    max-width: 44rem;
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 300;
+    line-height: 1.55;
+    color: #ffffff;
+}
+
+@media (max-width: 991px) {
+    .jumbotron { padding: 2.5rem 0; }
+    .jumbotron::after { display: none; }
+}
+
+.layout {
+    width: 100%;
+    flex: 1 0 auto;
+    max-width: var(--content-max);
+    margin: 0 auto;
+    padding: 2.5rem var(--content-pad) 3rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+.sidebar { font-size: 0.95rem; }
+.sidebar .block { margin-bottom: 1.5rem; }
+
+.main { min-width: 0; }
+
+.collection-head {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 0 0 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+}
+.collection-head__eyebrow {
+    margin: 0 0 0.35rem;
+    color: var(--primary);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+.collection-head h2 { margin: 0; font-size: 1.5rem; letter-spacing: -0.02em; }
+.collection-head__count { margin: 0; color: var(--muted); font-size: 0.8125rem; font-variant-numeric: tabular-nums; }
+
+.page-stream {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+    gap: 1.5rem;
+    align-items: stretch;
+}
+.page-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-width: 0;
+    padding: 1.5rem;
+    background: var(--canvas);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-1);
+    transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+.page-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 3px;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    background: linear-gradient(90deg, var(--primary), var(--primary-hover));
+    opacity: 0;
+    transition: opacity var(--dur) var(--ease);
+}
+.page-card:hover,
+.page-card:focus-within { transform: translateY(-3px); border-color: var(--primary); box-shadow: var(--shadow-2); }
+.page-card:hover::before,
+.page-card:focus-within::before { opacity: 1; }
+.page-card__top { display: flex; align-items: center; justify-content: flex-end; gap: 1rem; min-height: 1.5rem; }
+.page-card__top:has(.badge) { justify-content: space-between; }
+.page-card__date { color: var(--muted); font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; font-variant-numeric: tabular-nums; }
+.page-card__title { margin: 0; font-size: 1.3rem; line-height: 1.2; letter-spacing: -0.02em; }
+.page-card--featured .page-card__title { font-size: clamp(1.5rem, 3vw, 2rem); }
+.page-card__title a { color: var(--on-surface); text-decoration: none; }
+.page-card__title a::after { content: ""; position: absolute; inset: 0; border-radius: var(--radius-lg); }
+.page-card__title a:hover { color: var(--primary); }
+.page-card__title a:focus-visible { outline: none; }
+.page-card__title a:focus-visible::after { outline: 2px solid var(--primary); outline-offset: 4px; }
+.page-card__summary { max-width: 58ch; margin: 0; color: var(--muted); font-size: 0.9375rem; line-height: 1.62; }
+.page-card__tags { display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 0; padding: 0; list-style: none; }
+.page-card__tag { padding: 0.18rem 0.55rem; color: var(--muted); background: var(--surface); border: 1px solid var(--border); border-radius: 9999px; font-size: 0.6875rem; }
+.page-card__more { display: inline-flex; align-items: center; gap: 0.35rem; margin-top: auto; padding-top: 0.35rem; color: var(--primary); font-size: 0.8125rem; font-weight: 600; }
+.page-card__more .icon { transition: transform var(--dur) var(--ease); }
+.page-card:hover .page-card__more .icon { transform: translate(2px, -2px); }
+.badge { display: inline-block; padding: 0.2rem 0.6rem; color: #124e7c; background: var(--accent-soft); border-radius: 9999px; font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.empty-state { display: flex; align-items: center; gap: 0.85rem; padding: 2rem 1.5rem; color: var(--muted); background: var(--canvas); border: 1px dashed var(--border); border-radius: var(--radius-lg); }
+.empty-state p { margin: 0; }
+.empty-state__icon { width: 1.5rem; height: 1.5rem; color: var(--primary); }
+
+@media (min-width: 768px) {
+    .page-card--featured { grid-column: span 2; }
+}
+@media (max-width: 640px) {
+    .collection-head { align-items: start; }
+    .collection-head__count { padding-top: 0.25rem; white-space: nowrap; }
+}
+
+.page-content {
+    width: 100%;
+    max-width: 720px;
+    margin-inline: auto;
+    padding: clamp(1.25rem, 4vw, 2.5rem);
+    background: var(--canvas);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-1);
+}
+.article-head { margin: 0 0 2rem; padding: 0 0 1.35rem; border-bottom: 1px solid var(--border); }
+/* The reading time is a fact about the page, so it sits under the heading
+   with the other facts, not above it as a label. */
+.article-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0.7rem 0 0;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: none;
+    color: var(--muted);
+}
+
+.article-meta .icon {
+    width: 0.9rem;
+    height: 0.9rem;
+}
+.page-content h1 { margin: 0; font-size: 2.5rem; line-height: 1.12; letter-spacing: -0.03em; text-wrap: balance; }
+.page-content h2 { margin: 2.5rem 0 0.85rem; font-size: 1.625rem; line-height: 1.25; }
+.page-content h3 { margin: 2rem 0 0.6rem; font-size: 1.25rem; line-height: 1.3; }
+.page-content > p:not(.page-meta),
+.page-content li { font-size: 1.125rem; line-height: 1.7; }
+.page-content > p:not(.page-meta) { margin: 0 0 1.35rem; }
+.page-content a { text-decoration-thickness: 1.5px; text-underline-offset: 0.18em; }
+.page-content ul,
+.page-content ol { margin: 0 0 1.5rem; padding-left: 1.35rem; }
+.page-content li { margin: 0.35rem 0; }
+.page-content li::marker { color: var(--primary); }
+.page-content blockquote { margin: 2rem 0; padding: 0.25rem 0 0.25rem 1.25rem; color: var(--muted); border-left: 3px solid var(--primary); }
+.page-content hr { margin: 3rem 0; border: 0; border-top: 1px solid var(--border); }
+.page-content pre,
+.page-content code { font-family: var(--font-mono); }
+.page-content pre { max-width: 100%; overflow-x: auto; margin: 0 0 1.5rem; padding: 1.15rem 1.35rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+.page-content img { max-width: 100%; height: auto; border-radius: var(--radius); }
+.page-content figure { margin: 2rem 0; }
+.page-content figcaption { margin-top: 0.6rem; color: var(--muted); font-size: 0.8125rem; line-height: 1.5; }
+
+/* The publication date under an article: quieter than the body, and never below
+   AA. --muted is 4.47:1 on scholar's canvas, so the ink token carries this. */
+.page-meta {
+    margin: 2rem 0 0;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-soft);
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    letter-spacing: 0.04em;
+    color: var(--on-surface);
+    opacity: 0.72;
+}
+
+
+.button {
+    display: inline-block;
+    background: var(--primary);
+    color: #ffffff;
+    border: 1px solid var(--primary);
+    border-radius: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    font-weight: 400;
+    text-decoration: none;
+}
+.button:hover { background: var(--primary-hover); border-color: var(--primary-hover); color: #ffffff; }
+
+.challenge {
+    width: 100%;
+    max-width: 30rem;
+    margin: 1rem auto;
+    padding: clamp(1.5rem, 4vw, 2.25rem);
+    background: var(--canvas);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-1);
+}
+.challenge__lock { width: 2rem; height: 2rem; margin-bottom: 1rem; color: var(--primary); }
+.challenge h1 { margin: 0 0 1.25rem; font-size: 2rem; }
+.challenge label { display: block; margin-bottom: 0.4rem; font-size: 0.875rem; font-weight: 600; }
+.challenge input[type="password"] { width: 100%; padding: 0.7rem 0.85rem; font: inherit; color: var(--on-surface); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+.challenge input[type="password"]:focus { border-color: var(--primary); background: var(--canvas); }
+.challenge button { margin-top: 0.5rem; padding: 0.65rem 1.25rem; font: inherit; font-weight: 600; color: #ffffff; background: var(--primary); border: 1px solid var(--primary); border-radius: var(--radius); cursor: pointer; }
+.challenge button:hover,
+.challenge button:focus-visible { background: var(--primary-hover); border-color: var(--primary-hover); }
+
+
+
+/* No sidebars in this theme, so there are no rail tracks to reserve. */
+
+
+.block--address, .block--copyright { white-space: pre-line; }
+.block__figure { margin: 0 0 0.75rem; }
+.block__figure img { border-radius: 0.375rem; }
+
+.challenge__error {
+    color: #8c2f2a;
+    border-left: 3px solid currentColor;
+    padding-left: 0.75rem;
+    margin: 0 0 1rem;
+}
+
+/* ── Block library ─────────────────────────────────────────────────────────
+   One visual contract for all ten block types. Copied verbatim into every
+   theme so the blocks look native in each; only tokens differ. Never add a
+   second wrapper: each renderer already emits .block.block--<type>. */
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+.block { min-width: 0; }
+
+.block > h2 {
+    font-size: 0.8125rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin: 0 0 0.5rem;
+}
+
+.block ul { list-style: none; margin: 0; padding: 0; }
+.block li + li { margin-top: 0.35rem; }
+.block a { color: var(--primary); }
+
+/* The sprite is inline <svg>: without a size it claims 300x150 or 0x0. */
+.icon {
+    width: 1.15em;
+    height: 1.15em;
+    vertical-align: -0.18em;
+    fill: currentColor;
+    flex: none;
+}
+
+.block--menu ul ul { padding-left: 0.9rem; }
+.block--menu a { text-decoration: none; }
+.block--menu a:hover,
+.block--menu a:focus-visible { text-decoration: underline; }
+
+.block--social ul { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.block--social li + li { margin-top: 0; }
+.block--social a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.25rem;
+    min-height: 2.25rem;
+    border: 1px solid var(--border);
+    border-radius: 0.375rem;
+    color: var(--on-surface);
+}
+.block--social a:hover,
+.block--social a:focus-visible { border-color: var(--primary); color: var(--primary); }
+
+@media (pointer: coarse) {
+    .block--social a { min-width: 2.75rem; min-height: 2.75rem; }
+}
+
+.rss-chicklet {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.6rem;
+    border: 1px solid var(--border);
+    border-radius: 0.375rem;
+    font-size: 0.8125rem;
+    text-decoration: none;
+    color: var(--on-surface);
+}
+.rss-chicklet:hover,
+.rss-chicklet:focus-visible { border-color: var(--primary); color: var(--primary); }
+.rss-chicklet .icon { color: var(--primary); }
+
+.block--facts ul { list-style: none; }
+.block--facts li { position: relative; padding-left: calc(1.15rem + 0.35rem); }
+.block--facts li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    width: 1.15rem;
+    overflow: hidden;
+    white-space: nowrap;
+    color: var(--primary);
+}
+.block--facts li[data-bullet]::before { content: attr(data-bullet); }
+
+.block--images {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+}
+.block--images img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: 0.25rem;
+}
+
+.block--blurb figure { margin: 0 0 0.6rem; }
+.block--blurb figure img {
+    width: 4.5rem;
+    height: 4.5rem;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid var(--border);
+}
+.block--blurb p { margin: 0; line-height: 1.55; }
+
+.block--address { font-style: normal; line-height: 1.5; white-space: pre-line; }
+.block--copyright { font-size: 0.8125rem; color: var(--muted); }
+.block--custom { line-height: 1.55; }
+.block--custom a { text-decoration: underline; }
+.block--links a { text-decoration: none; }
+.block--links a:hover,
+.block--links a:focus-visible { text-decoration: underline; }
+
+.block--rss {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* The images renderer emits <h2> and <img> as siblings, so the heading is a
+   grid item and would take the first image cell. Span it across the row. */
+.block--images > h2 { grid-column: 1 / -1; }
+
+/* A long unbroken fact or URL must not widen the page at 375. */
+.block { overflow-wrap: anywhere; }
+
+/* Blocks keep the theme's own hover colour: a blanket .block a rule has the
+   same specificity as a:hover and would win on source order. */
+.block a:hover,
+.block a:focus-visible { color: var(--secondary); }
+
+/* ── Site footer: the closing band ─────────────────────────────────────────
+   DESIGN-1 puts the footer on the primary anchor, DESIGN-2 and DESIGN-3 on the
+   inverse surface; all three close the page with a heavy accent rule, a
+   four-up column split (DESIGN-3 §8: "4-column balanced grid or horizontal
+   split"), bolder headings and a separated colophon line. */
+.site-footer {
+    flex-shrink: 0;
+    margin-top: 4.5rem;
+    padding: 3rem var(--content-pad) 2rem;
+    background: var(--footer-bg);
+    color: var(--footer-ink);
+    border-top: 4px solid var(--footer-accent);
+}
+.site-footer .block {
+    margin-bottom: 0;
+    font-size: 0.95rem;
+    line-height: 1.65;
+}
+.site-footer .block > h2 {
+    color: var(--footer-ink);
+    font-size: 0.8125rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    opacity: 0.82;
+    margin: 0 0 0.75rem;
+}
+.site-footer a {
+    color: var(--footer-accent);
+    font-weight: 600;
+    text-decoration: none;
+}
+.site-footer a:hover,
+.site-footer a:focus-visible {
+    text-decoration: underline;
+    text-underline-offset: 0.18em;
+}
+.site-footer :focus-visible { outline: 2px solid var(--footer-accent); outline-offset: 2px; }
+
+.site-footer__blocks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem 2.5rem;
+    align-items: flex-start;
+    text-align: start;
+    max-width: var(--content-max);
+    margin: 0 auto;
+}
+.site-footer__blocks > .block {
+    flex: 1 1 12rem;
+    min-width: 0;
+    margin-bottom: 0;
+}
+.site-footer__copyright {
+    max-width: var(--content-max);
+    margin: 2rem auto 0;
+    padding-top: 1.25rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.22);
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+@media (max-width: 991px) {
+    .site-footer { padding: 2.25rem 1.25rem 1.5rem; margin-top: 3rem; }
+    .site-footer__blocks { flex-direction: column; gap: 1.5rem; }
+    /* flex-basis applies to the block axis in a column: reset it or every
+       block becomes 12rem tall regardless of its content. */
+    .site-footer__blocks > .block { flex: 0 0 auto; width: 100%; }
+}
+
+/* ── Contact form ──────────────────────────────────────────────────────────
+   The form is one shared partial (themes/shared/contact-form.php), so it is
+   styled here in every theme against the theme's own tokens. No colour is
+   hard-coded: the card is the canvas, fields sit on the warm surface, and the
+   submit button is the theme's primary action. Message text always uses the
+   body ink so the tinted backgrounds cannot fall below AA (clarity's
+   #c2402a on #fbe9e6 measures 4.41:1, so the danger colour is the rule only). */
+.contact-form {
+    max-width: 40rem;
+    margin-top: 2.5rem;
+    padding: 2rem;
+    background: var(--canvas);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+
+.contact-form > h2 { margin: 0 0 0.35rem; font-size: 1.5rem; }
+.contact-form__intro { margin: 0 0 1.5rem; font-size: 0.875rem; color: var(--muted); }
+.contact-form__form { margin: 0; }
+
+.contact-form__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem 1.25rem;
+}
+
+.contact-form__field { margin: 0; min-width: 0; }
+.contact-form__field--full,
+.contact-form__actions { grid-column: 1 / -1; }
+.contact-form__actions { margin: 0.25rem 0 0; }
+
+.contact-form label {
+    display: block;
+    margin-bottom: 0.35rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--on-surface);
+}
+
+.contact-form input[type="text"],
+.contact-form input[type="email"],
+.contact-form textarea {
+    width: 100%;
+    padding: 0.65rem 0.85rem;
+    font: inherit;
+    font-size: 0.9375rem;
+    color: var(--on-surface);
+    background: var(--surface);
+    /* --border measures 1.2-1.4:1 on the card: an edge nobody can see.
+       --outline is the palette step that clears the 3:1 non-text minimum. */
+    border: 1px solid var(--outline);
+    border-radius: 0.375rem;
+    transition: border-color 140ms ease, background 140ms ease;
+}
+
+.contact-form textarea {
+    min-height: 9rem;
+    resize: vertical;
+    line-height: 1.6;
+}
+
+.contact-form input[type="text"]:focus,
+.contact-form input[type="email"]:focus,
+.contact-form textarea:focus {
+    border-color: var(--primary);
+    background: var(--canvas);
+    outline: none;
+}
+
+.contact-form input[type="text"]:focus-visible,
+.contact-form input[type="email"]:focus-visible,
+.contact-form textarea:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 1px;
+}
+
+/* The honeypot is a real field so it stays in the DOM for bots, but no person
+   should see it or tab to it. */
+.contact-form__honeypot {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+.contact-form button {
+    display: inline-block;
+    padding: 0.7rem 1.5rem;
+    font: inherit;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--canvas);
+    background: var(--primary);
+    border: 0;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background 140ms ease;
+}
+
+.contact-form button:hover,
+.contact-form button:focus-visible { background: var(--primary-hover); }
+
+.contact-form__saved,
+.contact-form__error {
+    margin: 0 0 1.25rem;
+    padding: 0.7rem 1rem;
+    color: var(--on-surface);
+    border-left: 3px solid currentColor;
+    border-radius: 0.25rem;
+    font-size: 0.9375rem;
+}
+.contact-form__saved { background: var(--accent-soft); border-left-color: var(--primary); }
+.contact-form__error { background: var(--danger-soft); border-left-color: var(--danger); }
+
+@media (max-width: 640px) {
+    .contact-form { padding: 1.25rem; }
+    .contact-form__grid { grid-template-columns: 1fr; gap: 0.85rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .page-card,
+    .page-card::before,
+    .page-card__more .icon { transition: none; }
+    .page-card:hover,
+    .page-card:focus-within,
+    .page-card:hover .page-card__more .icon { transform: none; }
+}
+
+/* ── Long-token guard ──────────────────────────────────────────────────────
+   A title, summary, tag or article heading can arrive as one unbroken token.
+   Without this that single word widens its own grid track and the page scrolls
+   sideways on a phone (measured at 390: 121-660px of horizontal overflow). */
+.page-card,
+.page-card h2,
+.page-card p,
+.page-card__title,
+.page-card__summary,
+.page-card__tag,
+.page-content h1 {
+    overflow-wrap: anywhere;
+}

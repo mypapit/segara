@@ -1,0 +1,22 @@
+# Segara CMS - application-root .htaccess (Apache, shared hosting)
+# Installed as <deploy-target>/.htaccess by deploy/install.sh. It matters only when
+# DocumentRoot is the application directory instead of public_html/; in that case it
+# is the last line of defence in front of store/segara.sqlite.
+# nginx ignores this file entirely - deploy/nginx-php-fpm.conf carries the same rules.
+# Keep the pattern identical to both server templates.
+
+<IfModule mod_authz_core.c>
+    <FilesMatch "(?i)\.(?:sqlite3?|db3?)(?:-(?:wal|shm|journal))?$">
+        Require all denied
+    </FilesMatch>
+</IfModule>
+
+<IfModule mod_access_compat.c>
+    <FilesMatch "(?i)\.(?:sqlite3?|db3?)(?:-(?:wal|shm|journal))?$">
+        Order allow,deny
+        Deny from all
+    </FilesMatch>
+</IfModule>
+
+# A wrong DocumentRoot must not also be browsable.
+Options -Indexes

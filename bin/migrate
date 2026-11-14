@@ -1,0 +1,44 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use Segara\Storage\Database;
+use Segara\Storage\Migrator;
+
+if (PHP_SAPI !== 'cli') {
+    http_response_code(404);
+    echo "Not Found\n";
+    exit(1);
+}
+
+$projectRoot = dirname(__DIR__);
+require $projectRoot . '/vendor/autoload.php';
+
+$options = getopt('', ['database:', 'journal:', 'help']);
+if ($options === false || isset($options['help'])) {
+    echo "Usage: php bin/migrate [--database=PATH] [--journal=DELETE|WAL]\n";
+    exit(isset($options['help']) ? 0 : 1);
+}
+
+$database = $options['database'] ?? $projectRoot . '/store/segara.sqlite';
+$journal = $options['journal'] ?? 'DELETE';
+if (!is_string($database) || !is_string($journal)) {
+    fwrite(STDERR, "ERROR: --database and --journal each require one value.\n");
+    exit(1);
+}
+
+try {
+    $pdo = Database::connect($database, $journal);
+    $applied = (new Migrator($pdo, $projectRoot . '/migrations'))->migrate();
+} catch (Throwable $exception) {
+    fwrite(STDERR, 'ERROR: Migration failed: ' . $exception->getMessage() . "\n");
+    exit(1);
+}
+
+if ($applied === []) {
+    echo "OK: database schema is up to date\n";
+    exit(0);
+}
+
+echo 'OK: applied migrations ' . implode(', ', $applied) . "\n";

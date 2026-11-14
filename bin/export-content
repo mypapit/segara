@@ -1,0 +1,55 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use Segara\Config;
+use Segara\Pages\PageRepository;
+use Segara\Storage\Database;
+use Segara\Transfer\WxrExport;
+
+if (PHP_SAPI !== 'cli') {
+    http_response_code(404);
+    echo "Not Found\n";
+    exit(1);
+}
+
+$projectRoot = dirname(__DIR__);
+require $projectRoot . '/vendor/autoload.php';
+
+$options = getopt('', ['out:', 'help']);
+if (isset($options['help'])) {
+    echo "Usage: php bin/export-content [--out=PATH]\n";
+    echo "Export pages, tags, and authors as WXR 1.2 XML (default: stdout).\n";
+    exit(0);
+}
+if ($options === false) {
+    fwrite(STDERR, "ERROR: Invalid command options. Use --help for usage.\n");
+    exit(1);
+}
+
+$out = $options['out'] ?? null;
+if ($out !== null && !is_string($out)) {
+    fwrite(STDERR, "ERROR: --out requires one value.\n");
+    exit(1);
+}
+
+try {
+    $config = Config::load($projectRoot . '/settings/config.php');
+    $pdo = Database::connect($projectRoot . '/store/segara.sqlite');
+    $xml = (new WxrExport($config, new PageRepository($pdo)))->export();
+} catch (Throwable $exception) {
+    fwrite(STDERR, 'ERROR: ' . $exception->getMessage() . "\n");
+    exit(1);
+}
+
+if ($out === null) {
+    echo $xml;
+} else {
+    if (file_put_contents($out, $xml) === false) {
+        fwrite(STDERR, "ERROR: Could not write {$out}.\n");
+        exit(1);
+    }
+    echo 'OK: exported ' . strlen($xml) . " bytes to {$out}\n";
+}
+exit(0);

@@ -1,0 +1,1567 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   Scholar — "The Reading Room"
+
+   A modern academic press: warm paper, espresso ink, terracotta rules.
+   The palette is DESIGN-4 and is pinned by tests/ScholarThemeTest.php —
+   do not change a hex. Terracotta (#F18222) is a fill and a rule colour
+   only: as text on paper it measures 2.6:1 and fails WCAG AA.
+   No webfonts and no remote assets: the CSP is default-src 'self'.
+   Type falls back to Georgia / system sans exactly as the design intends.
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* ── 1. Tokens ─────────────────────────────────────────────────────────── */
+:root {
+    /* Palette — DESIGN-4, pinned */
+    --canvas: #FFFEFE;
+    --surface: #FAF7F4;
+    --on-surface: #362517;
+    --muted: #6A5340;              /* 7.13:1 on canvas, 6.73:1 on surface */
+    --primary: #954A00;
+    --primary-hover: #713700;
+    --secondary: #F18222;          /* fill + rule only, never text */
+    --accent: #9A5514;
+    --border: #E9E9E9;
+    /* DESIGN-4 outline: the palette value that clears 3:1 on this canvas,
+       so it is the only colour allowed to draw a control edge. */
+    --outline: #897264;
+    --border-soft: #DDC1B1;
+    --accent-soft: #FFEAD5;
+    --danger: #BA1A1A;
+    --danger-soft: #FFDAD6;
+
+    /* Chrome surfaces — pinned */
+    --header-bg: rgba(255, 254, 254, 0.88);
+    --header-line: #E9E9E9;
+    --footer-bg: #FFEAD5;
+    --footer-ink: #362517;
+    --footer-accent: #9A5514;
+
+    /* Type */
+    --font-body: "Work Sans", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+    --font-head: "Source Serif 4", Georgia, "Times New Roman", serif;
+    --font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+
+    /* Space — a 4px lattice */
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.5rem;
+    --space-6: 2rem;
+    --space-7: 2.5rem;
+    --space-8: 3rem;
+    --space-9: 4rem;
+    --space-10: 5rem;
+
+    /* Shape */
+    --radius-sm: 0.375rem;
+    --radius: 0.75rem;
+    --radius-lg: 1.125rem;
+    --radius-pill: 999px;
+
+    /* Depth — warm shadows, never grey */
+    --shadow-1: 0 1px 2px rgba(54, 37, 23, 0.04);
+    --shadow-2: 0 2px 4px rgba(54, 37, 23, 0.05), 0 18px 40px -24px rgba(54, 37, 23, 0.30);
+
+    /* Motion */
+    --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+    --dur: 180ms;
+
+    /* Layout — pinned */
+    --content-max: 1400px;
+    --content-pad: 2.5rem;
+    --header-h: 3.75rem;
+}
+
+/* ── 2. Reset & base ───────────────────────────────────────────────────── */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.65;
+    color: var(--on-surface);
+    background: var(--canvas);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3,
+h4 {
+    font-family: var(--font-head);
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+    margin: 0 0 0.5em;
+    text-wrap: balance;
+}
+
+p { text-wrap: pretty; }
+
+a {
+    color: var(--primary);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.18em;
+}
+a:hover { color: var(--primary-hover); }
+
+img { max-width: 100%; height: auto; }
+
+::selection {
+    background: var(--accent-soft);
+    color: var(--on-surface);
+}
+
+:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 3px;
+    border-radius: 2px;
+}
+
+[id] { scroll-margin-top: calc(var(--header-h) + 1.5rem); }
+
+.skip-link {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    z-index: 100;
+    padding: 0.6rem 1rem;
+    background: var(--on-surface);
+    color: var(--canvas);
+    border-radius: 0 0 var(--radius-sm) 0;
+    text-decoration: none;
+}
+.skip-link:focus { left: 0; }
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* The inline <symbol> sprite. It must stay in the layout box: display:none
+   breaks <use> in some engines. */
+.icon-sprite {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+}
+
+/* ── 3. Shell ──────────────────────────────────────────────────────────── */
+.layout {
+    width: 100%;
+    max-width: var(--content-max);
+    margin: 0 auto;
+    padding: 1.75rem var(--content-pad) 5rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2.5rem;
+    flex: 1 0 auto;
+}
+
+.main {
+    min-width: 0;
+    order: 1;
+}
+
+.sidebar {
+    min-width: 0;
+    order: 2;
+    display: grid;
+    gap: 1rem;
+    align-content: start;
+    font-size: 0.9375rem;
+}
+
+.sidebar--rail { order: 2; }
+
+@media (min-width: 1200px) {
+    /* One rail, on the right: the article keeps the first track. 1184px is
+       860 + 24 + 300 — the pinned pair plus the gap — and the header and the
+       footer narrow to the same 1184 so brand, article and rail share one
+       left edge and one right edge at every width. Change one, change all. */
+    body:has(.sidebar--rail) .header-inner {
+        max-width: calc(1184px + 2 * var(--content-pad));
+    }
+    .layout:has(.sidebar--rail) { grid-template-columns: minmax(0, 860px) 300px; justify-content: center; column-gap: 1.5rem; }
+
+    /* The footer is outside .layout and full-bleed, so it takes the same
+       column by padding rather than by max-width. */
+    body:has(.sidebar--rail) .site-footer {
+        padding-inline: max(var(--content-pad), calc((100% - 1184px) / 2));
+    }
+
+    .sidebar--rail {
+        position: sticky;
+        top: calc(var(--header-h) + 1.5rem);
+        align-self: start;
+    }
+}
+
+/* ── 4. Header ─────────────────────────────────────────────────────────── */
+.site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--header-bg);
+    backdrop-filter: blur(12px) saturate(140%);
+    -webkit-backdrop-filter: blur(12px) saturate(140%);
+    border-bottom: 1px solid var(--header-line);
+}
+
+.header-inner {
+    max-width: var(--content-max);
+    margin: 0 auto;
+    padding: 0.9rem var(--content-pad);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 2rem;
+    flex-wrap: wrap;
+}
+
+.site-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    max-width: 34rem;
+    font-family: var(--font-head);
+    font-size: 1.0625rem;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    color: var(--on-surface);
+    text-decoration: none;
+}
+
+/* The mark: a terracotta tile with a warm halo. Pure CSS, no image request. */
+.site-title::before {
+    content: "";
+    flex: none;
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 2px;
+    background: var(--secondary);
+    box-shadow: 0 0 0 4px rgba(241, 130, 34, 0.14);
+}
+
+.site-title:hover { color: var(--primary); }
+
+.site-nav {
+    margin-left: auto;
+    min-width: 0;
+}
+
+.site-nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.35rem 1.35rem;
+}
+
+.site-nav li { position: relative; }
+
+/* A steady 2px rule under the label on hover. The rule is terracotta; the
+   label stays espresso, because terracotta text fails AA. */
+.site-nav a {
+    display: inline-block;
+    padding: 0.35rem 0 0.3rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    color: var(--on-surface);
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+
+.site-nav a:hover,
+.site-nav a:focus-visible {
+    color: var(--primary);
+    border-bottom-color: var(--secondary);
+}
+
+.site-nav ul ul {
+    flex-basis: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.15rem;
+    padding: 0.35rem 0 0.2rem 0.85rem;
+    border-left: 2px solid var(--header-line);
+}
+
+@media (min-width: 1200px) {
+    .site-nav ul ul {
+        position: absolute;
+        top: calc(100% + 0.4rem);
+        right: 0;
+        min-width: 13rem;
+        margin: 0;
+        padding: 0.6rem 0.85rem;
+        gap: 0.35rem;
+        background: var(--canvas);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-2);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-4px);
+        transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease), visibility var(--dur);
+        z-index: 60;
+    }
+
+    .site-nav li:hover > ul,
+    .site-nav li:focus-within > ul {
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+    }
+}
+
+.site-nav ul ul a {
+    font-size: 0.8125rem;
+    color: var(--muted);
+}
+
+/* Below the rail breakpoint the menu takes its own row, left-aligned under
+   the brand, with a hairline that makes the second row deliberate. */
+@media (max-width: 1199px) {
+    .header-inner { padding-block: 0.7rem; gap: 0.15rem 1rem; }
+    .site-nav {
+        margin-left: 0;
+        width: 100%;
+        border-top: 1px solid var(--border);
+        padding-top: 0.35rem;
+    }
+    .site-nav ul { justify-content: flex-start; gap: 0.2rem 1.15rem; }
+    .site-nav ul ul {
+        align-items: flex-start;
+        border-left: 0;
+        border-right: 0;
+        padding: 0.3rem 0 0.2rem 0.85rem;
+        border-left: 2px solid var(--header-line);
+    }
+}
+
+/* ── 5. Announcement ───────────────────────────────────────────────────── */
+.announcement {
+    max-width: 72rem;
+    margin: 1.25rem auto 0;
+    padding: 0.8rem 1.15rem;
+    background: var(--accent-soft);
+    border: 1px solid rgba(154, 85, 20, 0.25);
+    border-radius: var(--radius);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+}
+
+/* ── 6. Masthead & hero ────────────────────────────────────────────────── */
+.masthead {
+    padding: 1.5rem 0 2rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 2rem;
+}
+
+.masthead__title {
+    margin: 0 0 0.65rem;
+    font-size: clamp(2.25rem, 5vw, 3.5rem);
+    line-height: 1.03;
+    letter-spacing: -0.028em;
+}
+
+.masthead__lead {
+    max-width: 46rem;
+    margin: 0;
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    color: var(--muted);
+}
+
+.masthead__stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 2rem;
+    margin: 1.5rem 0 0;
+    padding: 0;
+}
+
+.masthead__stat {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin: 0;
+}
+
+.masthead__stat dt {
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.masthead__stat dd {
+    margin: 0;
+    font-family: var(--font-head);
+    font-size: 0.9375rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.hero {
+    padding: 1.5rem 0 2rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 2rem;
+}
+
+.hero h1 {
+    margin: 0 0 0.75rem;
+    font-size: clamp(2.25rem, 5vw, 3.5rem);
+    line-height: 1.03;
+    letter-spacing: -0.028em;
+}
+
+.hero p {
+    max-width: 46rem;
+    margin: 0;
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    color: var(--muted);
+}
+
+/* ── 7. Index: stream and cards ────────────────────────────────────────── */
+.page-stream {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
+    gap: 1.25rem;
+    align-items: stretch;
+}
+
+.page-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 1.5rem;
+    background: var(--canvas);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-1);
+    transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+
+.page-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--border-soft);
+    box-shadow: var(--shadow-2);
+}
+
+/* The first entry is the lead story: full width, larger type, more air. */
+.page-card:first-child {
+    grid-column: 1 / -1;
+    padding: clamp(1.75rem, 3.4vw, 2.75rem);
+}
+
+.page-card__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 1.5rem;
+}
+
+.page-card__date {
+    margin-left: auto;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.page-card__index {
+    font-family: var(--font-head);
+    font-size: 0.8125rem;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.page-card__title {
+    margin: 0;
+    font-size: 1.25rem;
+    line-height: 1.25;
+    letter-spacing: -0.018em;
+}
+
+.page-card:first-child .page-card__title {
+    max-width: 26ch;
+    font-size: clamp(1.75rem, 3.2vw, 2.5rem);
+    line-height: 1.1;
+    letter-spacing: -0.026em;
+}
+
+.page-card__title a {
+    color: var(--on-surface);
+    text-decoration: none;
+}
+
+/* One link per card covers the whole card: no duplicate tab stops. */
+.page-card__title a::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-lg);
+}
+
+.page-card__title a:hover { color: var(--primary); }
+
+.page-card__title a:focus-visible { outline: none; }
+
+.page-card__title a:focus-visible::after {
+    outline: 2px solid var(--primary);
+    outline-offset: 4px;
+}
+
+.page-card__summary {
+    max-width: 58ch;
+    margin: 0;
+    font-size: 0.9375rem;
+    line-height: 1.62;
+    color: var(--muted);
+}
+
+.page-card__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.page-card__tag {
+    padding: 0.18rem 0.55rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-pill);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+}
+
+.page-card__more {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: auto;
+    padding-top: 0.35rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--primary);
+}
+
+.page-card__more .icon { transition: transform var(--dur) var(--ease); }
+
+.page-card:hover .page-card__more .icon { transform: translate(2px, -2px); }
+
+/* The DESIGN-4 signature tab corner lives on the featured chip only. */
+.badge {
+    display: inline-block;
+    padding: 0.25rem 0.6rem 0.25rem 0.5rem;
+    background: var(--accent-soft);
+    border: 1px solid rgba(154, 85, 20, 0.25);
+    border-radius: 0 48px 0 0;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--primary);
+}
+
+.empty-state {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    margin: 0;
+    padding: 2.25rem 1.75rem;
+    background: var(--surface);
+    border: 1px dashed var(--border-soft);
+    border-radius: var(--radius-lg);
+    color: var(--muted);
+}
+
+.empty-state p { margin: 0; }
+
+.empty-state__icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    color: var(--primary);
+}
+
+/* ── 8. Article ────────────────────────────────────────────────────────── */
+.page-content { max-width: 720px; }
+
+.article-head {
+    margin: 0 0 2rem;
+    padding: 0 0 1.35rem;
+    border-bottom: 1px solid var(--border);
+}
+
+/* The reading time is a fact about the page, so it sits under the heading
+   with the other facts, not above it as a label. */
+.article-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0.7rem 0 0;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: none;
+    color: var(--muted);
+}
+
+.article-meta .icon {
+    width: 0.9rem;
+    height: 0.9rem;
+}
+
+.page-content h1 {
+    margin: 0;
+    font-size: clamp(2rem, 4.4vw, 3rem);
+    line-height: 1.08;
+    letter-spacing: -0.026em;
+}
+
+.page-content h2 {
+    margin: 2.75rem 0 0.85rem;
+    font-size: 1.625rem;
+    line-height: 1.25;
+}
+
+.page-content h3 {
+    margin: 2rem 0 0.6rem;
+    font-size: 1.25rem;
+    line-height: 1.3;
+}
+
+/* Direct children only: the kicker and the page-meta are paragraphs too, and
+   a blanket `.page-content p` would out-rank both of them. */
+.page-content > p:not(.page-meta),
+.page-content li {
+    font-size: 1.125rem;
+    line-height: 1.7;
+}
+
+.page-content > p:not(.page-meta) { margin: 0 0 1.35rem; }
+
+/* A drop cap on the opening paragraph only: if the body opens with a
+   heading, figure or list, no letter is enlarged. */
+.page-content > .article-head + p::first-letter {
+    float: left;
+    padding: 0.08em 0.12em 0 0;
+    font-family: var(--font-head);
+    font-size: 3.4em;
+    line-height: 0.82;
+    color: var(--primary);
+}
+
+.page-content a {
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 0.18em;
+}
+
+.page-content ul,
+.page-content ol {
+    margin: 0 0 1.5rem;
+    padding-left: 1.35rem;
+}
+
+.page-content li { margin: 0.35rem 0; }
+
+.page-content li::marker { color: var(--primary); }
+
+.page-content hr {
+    margin: 3rem 0;
+    border: 0;
+    border-top: 1px solid var(--border);
+}
+
+.page-content img {
+    height: auto;
+    border-radius: var(--radius);
+}
+
+.page-content figure { margin: 2rem 0; }
+
+.page-content figcaption {
+    margin-top: 0.6rem;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--muted);
+}
+
+.page-content table {
+    width: 100%;
+    margin: 1.75rem 0;
+    border-collapse: collapse;
+    font-size: 0.9375rem;
+}
+
+.page-content caption {
+    margin-bottom: 0.6rem;
+    font-size: 0.8125rem;
+    text-align: left;
+    color: var(--muted);
+}
+
+.page-content th {
+    padding: 0.6rem 0.7rem;
+    font-family: var(--font-body);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-align: left;
+    border-bottom: 2px solid var(--on-surface);
+}
+
+.page-content td {
+    padding: 0.6rem 0.7rem;
+    vertical-align: top;
+    border-bottom: 1px solid var(--border);
+}
+
+.page-content tbody tr:hover { background: var(--surface); }
+
+.page-content pre {
+    margin: 0 0 1.5rem;
+    padding: 1.15rem 1.35rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--border-soft);
+    border-radius: var(--radius);
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+}
+
+.page-content code {
+    padding: 0.1em 0.35em;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: 0.875em;
+}
+
+.page-content pre code {
+    padding: 0;
+    background: none;
+    border: 0;
+    font-size: inherit;
+}
+
+/* DESIGN-4 pull quote: a 3px terracotta rule and serif italic, no tinted
+   box. The three declarations below are pinned. */
+.page-content blockquote {
+    margin: 2.5rem 0;
+    padding: 0.25rem 0 0.25rem 1.75rem;
+    border-left: 3px solid var(--secondary);
+    background: none;
+    font-family: var(--font-head);
+    font-style: italic;
+    font-size: 1.375rem;
+    line-height: 1.5;
+    color: var(--on-surface);
+}
+
+.page-content blockquote p {
+    margin: 0 0 0.6rem;
+    font-size: inherit;
+    line-height: inherit;
+}
+
+.page-content blockquote p:last-child { margin-bottom: 0; }
+
+.page-content cite {
+    display: block;
+    font-family: var(--font-head);
+    font-style: italic;
+    font-size: 0.9375rem;
+    color: var(--muted);
+}
+
+/* The date at the foot of the article. --muted would pass now, but the ink
+   token keeps the pinned AA contract explicit. */
+.page-meta {
+    margin: 2.5rem 0 0;
+    padding-top: 1.15rem;
+    border-top: 1px solid var(--border-soft);
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    letter-spacing: 0.02em;
+    color: var(--on-surface);
+    opacity: 0.78;
+}
+
+.page-meta::before {
+    content: "Published";
+    display: inline-block;
+    margin-right: 0.6rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+/* ── 9. Actions & challenge ────────────────────────────────────────────── */
+.button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.7rem 1.35rem;
+    background: var(--secondary);
+    color: #281809;
+    border-radius: var(--radius-pill);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    text-decoration: none;
+    transition: background var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+
+.button:hover,
+.button:focus-visible {
+    background: #FFA100;
+    color: #281809;
+    transform: translateY(-1px);
+}
+
+.challenge {
+    max-width: 26rem;
+    padding: 2rem;
+    background: var(--canvas);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-1);
+}
+
+.challenge__lock {
+    width: 2rem;
+    height: 2rem;
+    margin-bottom: 0.85rem;
+    color: var(--primary);
+}
+
+.challenge h1 {
+    margin: 0 0 1rem;
+    font-size: 1.5rem;
+}
+
+.challenge p { margin: 0 0 1rem; }
+
+.challenge label {
+    display: block;
+    margin-bottom: 0.35rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.challenge input[type="password"] {
+    width: 100%;
+    padding: 0.7rem 0.9rem;
+    font: inherit;
+    font-size: 0.9375rem;
+    color: var(--on-surface);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+
+.challenge input[type="password"]:focus {
+    background: var(--canvas);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(149, 74, 0, 0.14);
+    outline: none;
+}
+
+.challenge button {
+    margin-top: 0.35rem;
+    padding: 0.7rem 1.4rem;
+    background: var(--secondary);
+    color: #281809;
+    border: 0;
+    border-radius: var(--radius);
+    font: inherit;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background var(--dur) var(--ease);
+}
+
+.challenge button:hover { background: #FFA100; }
+
+.challenge__error {
+    margin: 0 0 1rem;
+    padding-left: 0.75rem;
+    color: var(--danger);
+    border-left: 3px solid currentColor;
+}
+
+/* ── 10. Block library ─────────────────────────────────────────────────── */
+/* One visual contract for all ten block types. The renderer emits
+   .block.block--<type>; never add a second wrapper. Only tokens differ. */
+.block {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.block > h2 {
+    margin: 0 0 0.7rem;
+    font-family: var(--font-body);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.block ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.block li + li { margin-top: 0.4rem; }
+
+.block a { color: var(--primary); }
+
+/* The sprite is inline <svg>: without a size it claims 300x150 or 0x0. */
+.icon {
+    width: 1.15em;
+    height: 1.15em;
+    vertical-align: -0.18em;
+    fill: currentColor;
+    flex: none;
+}
+
+/* Sidebar blocks are cards — the rail reads as a stack, not a dump. */
+.sidebar .block {
+    margin: 0;
+    padding: 1.25rem;
+    background: var(--canvas);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-1);
+}
+
+.sidebar .block > h2 {
+    padding-bottom: 0.55rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.block--menu ul ul { padding-left: 0.9rem; }
+
+.block--menu a { text-decoration: none; }
+
+.block--menu a:hover,
+.block--menu a:focus-visible {
+    color: var(--primary-hover);
+    text-decoration: underline;
+}
+
+.block--social ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.block--social li + li { margin-top: 0; }
+
+.block--social a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    color: var(--on-surface);
+    transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+
+.block--social a:hover,
+.block--social a:focus-visible {
+    background: var(--accent-soft);
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+@media (pointer: coarse) {
+    .block--social a { width: 2.75rem; height: 2.75rem; }
+}
+
+.rss-chicklet {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.4rem 0.75rem;
+    background: var(--accent-soft);
+    border: 1px solid rgba(154, 85, 20, 0.25);
+    border-radius: var(--radius-pill);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    text-decoration: none;
+    color: var(--primary);
+}
+
+.rss-chicklet:hover,
+.rss-chicklet:focus-visible {
+    background: var(--canvas);
+    color: var(--primary-hover);
+}
+
+.rss-chicklet .icon { color: var(--primary); }
+
+.block--facts li {
+    position: relative;
+    padding-left: calc(1.15rem + 0.35rem);
+}
+
+.block--facts li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    width: 1.15rem;
+    overflow: hidden;
+    white-space: nowrap;
+    color: var(--primary);
+}
+
+.block--facts li[data-bullet]::before { content: attr(data-bullet); }
+
+.block--images {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+}
+
+.block--images img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+}
+
+/* The images renderer emits <h2> and <img> as siblings, so the heading is a
+   grid item and would take the first image cell. Span it across the row. */
+.block--images > h2 { grid-column: 1 / -1; }
+
+.block--blurb figure { margin: 0 0 0.7rem; }
+
+.block--blurb figure img {
+    width: 4.5rem;
+    height: 4.5rem;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 0 0 4px var(--surface);
+}
+
+.block--blurb p {
+    margin: 0;
+    line-height: 1.6;
+}
+
+.block--address {
+    font-style: normal;
+    line-height: 1.6;
+    white-space: pre-line;
+}
+
+.block--copyright {
+    font-size: 0.8125rem;
+    color: var(--muted);
+}
+
+.block--custom { line-height: 1.6; }
+
+.block--custom a { text-decoration: underline; }
+
+.block--links a { text-decoration: none; }
+
+.block--links a:hover,
+.block--links a:focus-visible { text-decoration: underline; }
+
+.block--rss {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Blocks keep the theme's own hover colour: a blanket .block a rule has the
+   same specificity as a:hover and would win on source order. */
+.block a:hover,
+.block a:focus-visible { color: var(--secondary); }
+
+/* ── 11. Footer ────────────────────────────────────────────────────────── */
+.site-footer {
+    margin-top: 4.5rem;
+    padding: 3.5rem var(--content-pad) 2rem;
+    background: var(--footer-bg);
+    color: var(--footer-ink);
+    border-top: 3px solid var(--footer-accent);
+}
+
+.site-footer .block {
+    margin-bottom: 0;
+    font-size: 0.9375rem;
+    line-height: 1.65;
+}
+
+.site-footer .block > h2 {
+    margin: 0 0 0.85rem;
+    font-size: 0.6875rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    opacity: 0.85;
+    color: var(--footer-ink);
+}
+
+.site-footer a {
+    font-weight: 600;
+    color: var(--footer-accent);
+    text-decoration: none;
+}
+
+.site-footer a:hover,
+.site-footer a:focus-visible {
+    text-decoration: underline;
+    text-underline-offset: 0.18em;
+}
+
+.site-footer :focus-visible {
+    outline: 2px solid var(--footer-ink);
+    outline-offset: 2px;
+}
+
+.site-footer__blocks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2.5rem 3rem;
+    align-items: flex-start;
+    margin: 0;
+    text-align: start;
+}
+
+.site-footer__blocks > .block {
+    flex: 1 1 14rem;
+    min-width: 0;
+    margin-bottom: 0;
+}
+
+/* The tagline, directly above the colophon: a serif line, not another label. */
+.site-footer__tagline {
+    max-width: 72rem;
+    margin: 2.5rem 0 0;
+    font-family: var(--font-head);
+    font-size: 1rem;
+    font-style: italic;
+    line-height: 1.6;
+    letter-spacing: 0.01em;
+    color: var(--footer-ink);
+}
+
+.site-footer__copyright {
+    max-width: 72rem;
+    margin: 2rem 0 0;
+    padding-top: 1.25rem;
+    border-top: 1px solid rgba(54, 37, 23, 0.22);
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+/* ── 12. Contact form ──────────────────────────────────────────────────── */
+/* One shared partial (themes/shared/contact-form.php) styled by every theme.
+   The card rule order is pinned: padding, border, radius, canvas. */
+.contact-form {
+    max-width: 40rem;
+    margin-top: 2.5rem;
+    padding: 2rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--canvas);
+    box-shadow: var(--shadow-1);
+}
+
+.contact-form > h2 {
+    margin: 0 0 0.35rem;
+    font-size: 1.5rem;
+}
+
+.contact-form__intro {
+    margin: 0 0 1.5rem;
+    font-size: 0.875rem;
+    color: var(--muted);
+}
+
+.contact-form__form { margin: 0; }
+
+.contact-form__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem 1.25rem;
+}
+
+.contact-form__field {
+    margin: 0;
+    min-width: 0;
+}
+
+.contact-form__field--full,
+.contact-form__actions { grid-column: 1 / -1; }
+
+.contact-form__actions { margin: 0.25rem 0 0; }
+
+.contact-form label {
+    display: block;
+    margin-bottom: 0.35rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--on-surface);
+}
+
+.contact-form input[type="text"],
+.contact-form input[type="email"],
+.contact-form textarea {
+    width: 100%;
+    padding: 0.7rem 0.85rem;
+    font: inherit;
+    font-size: 0.9375rem;
+    color: var(--on-surface);
+    background: var(--surface);
+    /* --border measures 1.2-1.4:1 on the card: an edge nobody can see.
+       --outline is the palette step that clears the 3:1 non-text minimum. */
+    border: 1px solid var(--outline);
+    border-radius: var(--radius-sm);
+    transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+
+.contact-form textarea {
+    min-height: 9rem;
+    resize: vertical;
+    line-height: 1.6;
+}
+
+.contact-form input[type="text"]:focus,
+.contact-form input[type="email"]:focus,
+.contact-form textarea:focus {
+    background: var(--canvas);
+    border-color: var(--primary);
+    outline: none;
+}
+
+.contact-form input[type="text"]:focus-visible,
+.contact-form input[type="email"]:focus-visible,
+.contact-form textarea:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 1px;
+}
+
+.contact-form__honeypot {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+.contact-form button {
+    display: inline-block;
+    padding: 0.7rem 1.5rem;
+    color: #281809;
+    background: var(--secondary);
+    border: 0;
+    border-radius: var(--radius);
+    font: inherit;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background var(--dur) var(--ease);
+}
+
+.contact-form button:hover,
+.contact-form button:focus-visible { background: #FFA100; }
+
+.contact-form__saved,
+.contact-form__error {
+    margin: 0 0 1.25rem;
+    padding: 0.7rem 1rem;
+    border-radius: var(--radius-sm);
+    border-left: 3px solid currentColor;
+    font-size: 0.9375rem;
+    color: var(--on-surface);
+}
+
+.contact-form__saved {
+    background: var(--accent-soft);
+    border-left-color: var(--primary);
+}
+
+.contact-form__error {
+    background: var(--danger-soft);
+    border-left-color: var(--danger);
+}
+
+/* ── 13. Notice (404) and fatal (500) ──────────────────────────────────── */
+.notice {
+    max-width: 40rem;
+    padding: clamp(2rem, 4vw, 3rem);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+}
+
+.notice__code {
+    margin: 0 0 1rem;
+    font-family: var(--font-head);
+    font-size: clamp(3rem, 8vw, 4.5rem);
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: var(--primary);
+}
+
+.notice h1 {
+    margin: 0 0 0.75rem;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+}
+
+.notice > p:not(.notice__code) {
+    margin: 0 0 1.5rem;
+    font-size: 1.0625rem;
+    line-height: 1.65;
+    color: var(--muted);
+}
+
+.notice__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-weight: 600;
+    text-decoration: none;
+    border-bottom: 1px solid var(--border-soft);
+    padding-bottom: 0.1rem;
+}
+
+.notice__link:hover { border-bottom-color: var(--primary); }
+
+.fatal-page {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: var(--surface);
+}
+
+.fatal {
+    max-width: 30rem;
+    padding: 2.5rem;
+    background: var(--canvas);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-1);
+}
+
+.fatal h1 {
+    margin: 0 0 0.75rem;
+    font-size: 1.75rem;
+}
+
+.fatal p {
+    margin: 0 0 1rem;
+    color: var(--muted);
+}
+
+.fatal code {
+    padding: 0.1em 0.4em;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: 0.875em;
+    color: var(--on-surface);
+}
+
+.fatal a { font-weight: 600; }
+
+/* ── 14. Small screens ─────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+    :root {
+        --content-pad: 1.25rem;
+        --space-7: 2rem;
+    }
+
+    .layout {
+        padding-top: 1rem;
+        padding-bottom: 3.5rem;
+        gap: 2rem;
+    }
+
+    .masthead,
+    .hero {
+        padding-top: 0.75rem;
+        padding-bottom: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .masthead__stats { gap: 0.3rem 1.25rem; }
+
+    .page-card:first-child .page-card__title { font-size: 1.75rem; }
+
+    .page-content h1 { font-size: 1.875rem; }
+
+    .page-content p,
+    .page-content li { font-size: 1.0625rem; }
+
+    .site-footer {
+        margin-top: 3rem;
+        padding: 2.5rem 1.25rem 1.5rem;
+    }
+
+    .site-footer__blocks {
+        flex-direction: column;
+        gap: 1.75rem;
+    }
+
+    /* flex-basis applies to the block axis in a column: reset it or every
+       block becomes 14rem tall regardless of its content. */
+    .site-footer__blocks > .block {
+        flex: 0 0 auto;
+        width: 100%;
+    }
+
+}
+
+@media (max-width: 640px) {
+    .contact-form { padding: 1.25rem; }
+
+    .contact-form__grid {
+        grid-template-columns: 1fr;
+        gap: 0.85rem;
+    }
+}
+
+@media (max-width: 479px) {
+    .site-title { font-size: 1rem; }
+    .page-card { padding: 1.25rem; }
+    .page-card:first-child { padding: 1.5rem 1.25rem; }
+    .badge { letter-spacing: 0.06em; }
+}
+
+/* ── 15. Motion & print ────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    .page-card:hover,
+    .button:hover { transform: none; }
+
+    .page-card:hover .page-card__more .icon { transform: none; }
+}
+
+@media print {
+    body {
+        background: #fff;
+        color: #000;
+    }
+
+    .site-header,
+    .site-nav,
+    .sidebar,
+    .site-footer,
+    .announcement,
+    .skip-link,
+    .page-card__more,
+    .contact-form { display: none !important; }
+
+    .layout {
+        display: block;
+        max-width: none;
+        padding: 0;
+    }
+
+    .page-content { max-width: none; }
+
+    a { color: #000; text-decoration: underline; }
+
+    .page-content h1 { font-size: 22pt; }
+
+    .page-content p,
+    .page-content li { font-size: 11pt; }
+}
+
+/* ── Long-token guard ──────────────────────────────────────────────────────
+   A title, summary, tag or article heading can arrive as one unbroken token.
+   Without this that single word widens its own grid track and the page scrolls
+   sideways on a phone (measured at 390: 121-660px of horizontal overflow). */
+.page-card,
+.page-card h2,
+.page-card p,
+.page-card__title,
+.page-card__summary,
+.page-card__tag,
+.page-content h1 {
+    overflow-wrap: anywhere;
+}

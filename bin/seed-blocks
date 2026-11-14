@@ -1,0 +1,76 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use Segara\Blocks\BlockRepository;
+use Segara\Blocks\BlockSeeder;
+use Segara\Config;
+use Segara\Menus\MenuRepository;
+use Segara\Settings\SettingsRepository;
+use Segara\Storage\Database;
+
+if (PHP_SAPI !== 'cli') {
+    http_response_code(404);
+    echo "Not Found\n";
+    exit(1);
+}
+
+$projectRoot = dirname(__DIR__);
+require $projectRoot . '/vendor/autoload.php';
+
+$options = getopt('', ['help', 'site-name:']);
+if (isset($options['help'])) {
+    echo "Usage: php bin/seed-blocks [--site-name=NAME]\n";
+    echo "Create the default sidebar and footer blocks on an empty store.\n";
+    echo "Refuses to run when the store already has any block. Safe to re-run.\n";
+    exit(0);
+}
+if ($options === false) {
+    fwrite(STDERR, "ERROR: Invalid command options. Use --help for usage.\n");
+    exit(1);
+}
+$allowed = ['help', 'site-name'];
+foreach (array_keys($options) as $given) {
+    if (!in_array($given, $allowed, true)) {
+        fwrite(STDERR, "ERROR: Unknown option --{$given}. Use --help for usage.\n");
+        exit(1);
+    }
+}
+
+$configPath = $projectRoot . '/settings/config.php';
+if (!is_file($configPath)) {
+    fwrite(STDERR, "ERROR: settings/config.php is missing. Run bin/setup first.\n");
+    exit(1);
+}
+
+try {
+    Config::load($configPath);   // fail early when the configuration is broken
+    $sqlite = $projectRoot . '/store/segara.sqlite';
+    if (!is_file($sqlite)) {
+        fwrite(STDERR, "ERROR: store/segara.sqlite is missing. Run bin/migrate first.\n");
+        exit(1);
+    }
+    $pdo = Database::connect($sqlite);
+    $settings = new SettingsRepository($pdo);
+    $siteName = isset($options['site-name']) && is_string($options['site-name']) && $options['site-name'] !== ''
+        ? $options['site-name']
+        : ($settings->get('site_name') ?? 'this site');
+
+    $seeder = new BlockSeeder(new BlockRepository($pdo), new MenuRepository($pdo), $siteName, null, $settings);
+    $ids = $seeder->seed();
+} catch (Throwable $exception) {
+    fwrite(STDERR, 'ERROR: ' . $exception->getMessage() . "\n");
+    exit(1);
+}
+
+if ($ids === []) {
+    echo "Blocks already exist, nothing to do.\n";
+    exit(0);
+}
+
+echo "Created " . count($ids) . " blocks:\n";
+foreach ($ids as $id) {
+    echo '  ' . $id . "\n";
+}
+exit(0);

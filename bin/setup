@@ -1,0 +1,110 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use Segara\Auth\AdminRepository;
+use Segara\Storage\Database;
+use Segara\Storage\Migrator;
+
+if (PHP_SAPI !== 'cli') {
+    http_response_code(404);
+    echo "Not Found\n";
+    exit(1);
+}
+
+$projectRoot = dirname(__DIR__);
+require $projectRoot . '/vendor/autoload.php';
+
+$options = getopt('', ['database:', 'journal:', 'username:', 'display-name:', 'help']);
+if (isset($options['help'])) {
+    echo "Usage: php bin/setup --username=NAME [--display-name=NAME] [--database=PATH] [--journal=DELETE|WAL]\n";
+    echo "Create the first administrator locally. The password is read without echoing, or from standard input.\n";
+    exit(0);
+}
+if ($options === false) {
+    fwrite(STDERR, "ERROR: Invalid command options. Use --help for usage.\n");
+    exit(1);
+}
+
+$database = $options['database'] ?? $projectRoot . '/store/segara.sqlite';
+$journal = $options['journal'] ?? 'DELETE';
+$username = $options['username'] ?? null;
+$displayName = $options['display-name'] ?? $username;
+if (!is_string($database) || !is_string($journal) || !is_string($username) || !is_string($displayName)) {
+    fwrite(STDERR, "ERROR: --username is required and each option accepts one value.\n");
+    exit(1);
+}
+
+/**
+ * Read a password without placing it in arguments, output, or logs.
+ */
+function readAdministratorPassword(): string
+{
+    $interactive = function_exists('stream_isatty') && stream_isatty(STDIN);
+    $stty = null;
+    if ($interactive) {
+        fwrite(STDERR, 'Password: ');
+        foreach (['/bin/stty', '/usr/bin/stty'] as $candidate) {
+            if (is_executable($candidate)) {
+                $stty = $candidate;
+                break;
+            }
+        }
+        if ($stty !== null) {
+            shell_exec($stty . ' -echo');
+        }
+    }
+
+    try {
+        $password = fgets(STDIN);
+    } finally {
+        if ($interactive) {
+            if ($stty !== null) {
+                shell_exec($stty . ' echo');
+            }
+            fwrite(STDERR, "\n");
+        }
+    }
+
+    if ($password === false) {
+        throw new RuntimeException('Unable to read the password from standard input.');
+    }
+
+    return rtrim($password, "\r\n");
+}
+
+$pdo = null;
+try {
+    $pdo = Database::connect($database, $journal);
+    (new Migrator($pdo, $projectRoot . '/migrations'))->migrate();
+    $admins = new AdminRepository($pdo);
+    if ($admins->count() !== 0) {
+        fwrite(STDERR, "ERROR: Administrator setup has already been completed; refusing to overwrite it.\n");
+        exit(1);
+    }
+
+    $password = readAdministratorPassword();
+    $pdo->beginTransaction();
+    if ($admins->count() !== 0) {
+        $pdo->rollBack();
+        fwrite(STDERR, "ERROR: Administrator setup has already been completed; refusing to overwrite it.\n");
+        exit(1);
+    }
+    $admins->create($username, $displayName, $password);
+    $pdo->commit();
+} catch (InvalidArgumentException $exception) {
+    if ($pdo !== null && $pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+    fwrite(STDERR, 'ERROR: ' . $exception->getMessage() . "\n");
+    exit(1);
+} catch (Throwable) {
+    if ($pdo !== null && $pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+    fwrite(STDERR, "ERROR: Administrator setup failed.\n");
+    exit(1);
+}
+
+echo "OK: First administrator created.\n";

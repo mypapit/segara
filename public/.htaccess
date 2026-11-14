@@ -1,0 +1,26 @@
+# Segara CMS — public/.htaccess (Apache, for shared hosting without a vhost)
+# Clean URLs route through index.php; real files (admin.php, media.php, assets)
+# are served directly. If mod_rewrite is unavailable, use the query fallback:
+#   /index.php?page=slug   (also /index.php?page=slug&preview=1)
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Serve real files and directories as-is.
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Everything else through the public front controller.
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+# Never serve hidden files.
+<IfModule mod_authz_core.c>
+    <FilesMatch "^\.">
+        Require all denied
+    </FilesMatch>
+</IfModule>
+
+# Disable directory listings.
+Options -Indexes

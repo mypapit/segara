@@ -1,0 +1,60 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use Segara\Environment;
+
+if (PHP_SAPI !== 'cli') {
+    http_response_code(404);
+    echo "Not Found\n";
+    exit(1);
+}
+
+$projectRoot = dirname(__DIR__);
+require $projectRoot . '/vendor/autoload.php';
+
+$options = getopt('', ['public:', 'help']);
+if ($options === false || isset($options['help'])) {
+    echo "Usage: php bin/check-environment [--public=PATH]\n";
+    echo "Verify the PHP runtime and the on-disk layout Segara needs.\n";
+    echo "  --public=PATH  Document root (default: <project>/public).\n";
+    exit(isset($options['help']) ? 0 : 1);
+}
+
+$publicRoot = $options['public'] ?? $projectRoot . '/public';
+if (!is_string($publicRoot)) {
+    fwrite(STDERR, "ERROR: --public requires one value.\n");
+    exit(1);
+}
+
+$composer = json_decode(
+    file_get_contents($projectRoot . '/composer.json'),
+    true,
+    512,
+    JSON_THROW_ON_ERROR
+);
+$requiredExtensions = [];
+foreach (array_keys($composer['require']) as $requirement) {
+    if (str_starts_with($requirement, 'ext-')) {
+        $requiredExtensions[] = substr($requirement, 4);
+    }
+}
+
+$environment = new Environment($requiredExtensions);
+$report = $environment->report(PHP_VERSION, get_loaded_extensions(), [
+    'public' => $publicRoot,
+    'store' => $projectRoot . '/store',
+    'uploads' => $projectRoot . '/uploads',
+    'config' => $projectRoot . '/settings/config.php',
+    'sqlite' => $projectRoot . '/store/segara.sqlite',
+]);
+
+if (!$report['ok']) {
+    foreach ($report['errors'] as $error) {
+        fwrite(STDERR, 'ERROR: ' . $error . "\n");
+    }
+    exit(1);
+}
+
+echo "OK: Segara environment requirements satisfied\n";
