@@ -6,6 +6,34 @@ Project home: <https://github.com/mypapit/segara/>
 
 Segara is built for one person running one small website on their own server. Install is a file copy, one migration, and a `chown`; backup is a copy of `store/` and `uploads/`. There is no database daemon, build step, plugin system, or web installer.
 
+## Screenshots
+
+Two admin screens and four of the six shipped themes.
+
+**Admin sign-in** — `admin.php` with no session.
+
+![Segara admin sign-in card on a dark background](screenshots/admin-login.png)
+
+**Theme selection** — the Appearance panel, Warm Editorial Folio selected.
+
+![Six theme cards with sidebar counts and a SELECTED badge on Folio](screenshots/themes-selection.png)
+
+**Aubergine Atelier** (`aubergine`) — aubergine surfaces, a rail with a card index, signal-orange accents.
+
+![Aubergine Atelier theme: article beside a right rail holding social links, an RSS button and a quick facts card](screenshots/aubergine-theme.png)
+
+**Warm Editorial** (`editorial`) — the literary layout; with no blocks placed, both rails collapse and the article takes the full column.
+
+![Warm Editorial theme rendering a single column](screenshots/warm-editorial-theme.png)
+
+**Warm Editorial Folio** (`folio`) — the same palette with one rail and the old-style serif carried through the article.
+
+![Warm Editorial Folio theme with one rail and serif headings](screenshots/warm-editorial-folio-theme.png)
+
+**Slate Bootstrap** (`slate`) — dark header and footer, a blue accent rule, content in one card.
+
+![Slate Bootstrap theme: dark bars, a centred content card, and a blue rule above the footer](screenshots/slate-bootstrap-theme.png)
+
 ## Features
 
 ### Pages and publishing
